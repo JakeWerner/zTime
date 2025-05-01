@@ -123,16 +123,27 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Time Converter'),
             onTap: () { Navigator.pop(context); onSelectItem(1); },
           ),
+          ListTile( // Index 3
+            leading: const Icon(Icons.straighten_outlined), //Ruler icon
+            title: const Text('Unit Converter'),
+            onTap: () { Navigator.pop(context); onSelectItem(2); },
+          ),
           ListTile( // Index 2 - NEW
             leading: const Icon(Icons.language), // World icon
             title: const Text('World Clock'),
-            onTap: () { Navigator.pop(context); onSelectItem(2); },
+            onTap: () { Navigator.pop(context); onSelectItem(3); },
           ),
           const Divider(),
-           ListTile( // Index 3 - Was 2
+          ListTile( // Index 4
+            leading: const Icon(Icons.calculate_outlined), // Calculator icon
+            title: const Text('Flight Calculators'),
+            onTap: () { Navigator.pop(context); onSelectItem(4); },
+          ),
+          const Divider(),
+          ListTile( // Index 3 - Was 2
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Settings'),
-            onTap: () { Navigator.pop(context); onSelectItem(3); },
+            onTap: () { Navigator.pop(context); onSelectItem(5); },
           ),
           const Divider(),
            ListTile(

@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import shared_pr
 import 'home_page_content.dart';
 import 'world_clock_screen.dart';
 import 'conversion_screen.dart';
+import 'unit_converter_screen.dart';
+import 'flight_calculator_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/app_drawer.dart';
 
@@ -30,15 +32,19 @@ class _MainScreenState extends State<MainScreen> {
   static const List<Widget> _pageContentOptions = <Widget>[
     HomePageContent(key: ValueKey('home_content')),      // Index 0
     ConversionScreen(key: ValueKey('converter_content')), // Index 1
-    WorldClockScreen(key: ValueKey('world_clock_content')),// Index 2
-    SettingsScreen(key: ValueKey('settings_content')),     // Index 3
+    UnitConverterScreen(key: ValueKey('unit_converter_content')), //Index 2
+    WorldClockScreen(key: ValueKey('world_clock_content')),// Index 3
+    FlightCalculatorScreen(key: ValueKey('flight_calc_content')),// Index 4 (NEW)
+    SettingsScreen(key: ValueKey('settings_content')),     // Index 5
   ];
 
   static const List<String> _pageTitles = <String>[
     'zTime Clock', // Index 0     
     'Time Converter',  // Index 1
-    'World Clock',     // Index 2
-    'Settings',        // Index 3
+    'Unit Converter',  // Index 2
+    'World Clock',     // Index 3
+    'Flight Calculators', //Index 4
+    'Settings',        // Index 5
   ];
   // --- End Page Content ---
 
