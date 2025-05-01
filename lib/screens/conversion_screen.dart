@@ -33,7 +33,7 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
 
   // --- Formatters ---
   final DateFormat _dateFormatter = DateFormat('MM-dd-yyyy');
-  final DateFormat _resultDateTimeFormatter = DateFormat('MM-dd-yyyy HH:mm:ss Z');
+  final DateFormat _resultDateTimeFormatter = DateFormat('MM-dd-yyyy HH:mm Z');
 
   // --- Add wantKeepAlive override ---
   @override
@@ -276,7 +276,7 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
                    Text('Converted Time:', style: Theme.of(context).textTheme.titleMedium,),
                   const SizedBox(height: 10),
                   Text(_resultDateTimeFormatter.format(_convertedDateTime!), style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-                   Text('(${_getDisplayName(_targetTimeZoneId)})', style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center,),
+                   Text('${_getDisplayName(_targetTimeZoneId)}', style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center,),
                 ],
               ),
             ),

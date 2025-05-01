@@ -65,7 +65,11 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: lib/assets/zTimeLogoWhiteBack.png
-  min_sdk_android: 21
+  min_sdk_android: 21 
+  adaptive_icon_background: "#FFFFFF" # <-- SET YOUR BACKGROUND COLOR HERE
+  # OR use an image path instead of color:
+  # adaptive_icon_background: "lib/assets/zTimeLogo_background.png"
+  adaptive_icon_foreground: "lib/assets/zTimeLogo.png"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
