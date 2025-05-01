@@ -32,8 +32,8 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
   late final Map<String, String> _idToDisplayName;
 
   // --- Formatters ---
-  final DateFormat _dateFormatter = DateFormat('yyyy-MM-dd');
-  final DateFormat _resultDateTimeFormatter = DateFormat('yyyy-MM-dd HH:mm:ss Z');
+  final DateFormat _dateFormatter = DateFormat('MM-dd-yyyy');
+  final DateFormat _resultDateTimeFormatter = DateFormat('MM-dd-yyyy HH:mm:ss Z');
 
   // --- Add wantKeepAlive override ---
   @override
