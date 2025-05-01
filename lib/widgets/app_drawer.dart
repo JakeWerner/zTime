@@ -2,26 +2,28 @@
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatelessWidget {
+  // Callback function to notify MainScreen which item was selected
   final Function(int) onSelectItem;
 
+  // Require the callback in the constructor
   const AppDrawer({required this.onSelectItem, super.key});
 
   @override
   Widget build(BuildContext context) {
     // Use Theme.of(context) to access theme data for header color etc.
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Drawer(
       child: ListView(
+        // Important: Remove any padding from the ListView.
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader( // Use DrawerHeader, not const if using theme data
+          DrawerHeader(
             decoration: BoxDecoration(
               // Use theme color for header background
-              color: theme.colorScheme.primary, // A good themed color
+              color: theme.colorScheme.primary,
             ),
-            // --- FIX: Add the required 'child' property ---
+            // Display title within the header
             child: Text(
               'Menu',
               style: TextStyle(
@@ -30,31 +32,35 @@ class AppDrawer extends StatelessWidget {
                 fontSize: 24,
               ),
             ),
-            // --- End Fix ---
           ),
+          // --- ListTile Order Changed ---
           ListTile(
-            leading: const Icon(Icons.home),
+            leading: const Icon(Icons.home_outlined),
             title: const Text('Home'),
             onTap: () {
-              onSelectItem(0);
+              Navigator.pop(context); // Pop drawer first
+              onSelectItem(0);        // Home is Index 0
             },
           ),
           ListTile(
             leading: const Icon(Icons.swap_horiz),
             title: const Text('Time Converter'),
             onTap: () {
-              onSelectItem(2);
+               Navigator.pop(context); // Pop drawer first
+               onSelectItem(1);        // Converter is Index 1
             },
           ),
+          // Settings is now last
+          const Divider(), // Optional divider before settings
            ListTile(
-            leading: const Icon(Icons.settings),
+            leading: const Icon(Icons.settings_outlined),
             title: const Text('Settings'),
             onTap: () {
-              onSelectItem(1);
+              Navigator.pop(context); // Pop drawer first
+              onSelectItem(2);        // Settings is Index 2
             },
           ),
-
-          // ... other ListTiles
+          // --- End Order Change ---
         ],
       ),
     );

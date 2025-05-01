@@ -1,12 +1,14 @@
-// lib/screens/main_screen.dart (Rename/move home_screen.dart content here)
+// lib/screens/main_screen.dart
 import 'package:flutter/material.dart';
 
-// Import the CONTENT widgets for each page (we'll create/refactor these)
+// Import the CONTENT widgets for each page
+// Adjust paths as needed
 import 'home_page_content.dart';
-import 'settings_screen.dart'; // Keep existing screen names for now is okay
+import 'settings_screen.dart';
 import 'conversion_screen.dart';
-import '../widgets/app_drawer.dart'; // Keep using your drawer
+import '../widgets/app_drawer.dart'; // Import the drawer
 
+// This is the main structure holding the persistent AppBar and Drawer
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -15,45 +17,66 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0; // 0: Home, 1: Settings, 2: Converter
+  int _selectedIndex = 0; // Index for the currently displayed page content
 
-  // List of the main content widgets for each "page"
-  // IMPORTANT: These should be the body content, NOT full Scaffolds
+  // --- REORDERED LISTS to match Drawer ---
+  // Home (0), Converter (1), Settings (2)
   static const List<Widget> _pageContentOptions = <Widget>[
-    HomePageContent(), // Extracted content from old HomeScreen
-    SettingsScreen(),    // Refactored SettingsScreen (no Scaffold/AppBar)
-    ConversionScreen(),  // Refactored ConversionScreen (no Scaffold/AppBar)
+    HomePageContent(key: ValueKey('home_content')),    // Index 0
+    ConversionScreen(key: ValueKey('converter_content')), // Index 1 (Was Settings)
+    SettingsScreen(key: ValueKey('settings_content')),     // Index 2 (Was Converter)
   ];
 
-  // Titles for the AppBar corresponding to each page
+  // Titles for the AppBar corresponding to each page index
   static const List<String> _pageTitles = <String>[
-    'zTime Home',
-    'Settings',
-    'Time Converter',
+    'Zulu Time Clock', // Index 0
+    'Time Converter',  // Index 1 (Was Settings)
+    'Settings',        // Index 2 (Was Converter)
   ];
+  // --- END REORDER ---
 
 
+  // Callback function passed TO the AppDrawer
+  // This is called BY the AppDrawer when an item is tapped
   void _onSelectItem(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    Navigator.pop(context); // Close the drawer
+    // Check if the index is valid
+    if (index >= 0 && index < _pageContentOptions.length) {
+      // --- WORKAROUND: Add slight delay before setState for ghost box issue ---
+      Future.delayed(const Duration(milliseconds: 50), () { // 50ms delay
+        // Check if the widget is still mounted after the delay before calling setState
+        if (mounted) {
+          setState(() {
+            _selectedIndex = index;
+            print("MainScreen: Switched to index $index"); // Debug print
+          });
+        }
+      });
+      // --- End Workaround ---
+    }
+    // Drawer pops itself before calling this now
   }
+
+// In class _MainScreenState inside lib/screens/main_screen.dart
 
   @override
   Widget build(BuildContext context) {
+    print("MainScreen build: Selected Index = $_selectedIndex");
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageTitles[_selectedIndex]), // Title changes based on selection
+        title: Text(_pageTitles[_selectedIndex]),
       ),
-      // Pass the callback function TO the drawer
-      drawer: AppDrawer(onSelectItem: _onSelectItem),
-      body: IndexedStack( // Use IndexedStack to keep state of pages
-         index: _selectedIndex,
-         children: _pageContentOptions,
-      ),
-      // Or simply:
-      // body: _pageContentOptions[_selectedIndex], // Simpler, but pages might lose state when switched
+      drawer: AppDrawer(onSelectItem: _onSelectItem), // Pass the callback
+
+      // --- TEMPORARY CHANGE FOR TESTING ---
+      // Comment out IndexedStack:
+      // body: IndexedStack(
+      //    index: _selectedIndex,
+      //    children: _pageContentOptions,
+      // ),
+
+      // Use direct body switching instead:
+      body: _pageContentOptions[_selectedIndex],
+      // --- END TEMPORARY CHANGE ---
     );
   }
 }

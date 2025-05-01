@@ -4,50 +4,83 @@ import 'dart:async'; // For Timer
 import 'package:intl/intl.dart'; // For formatting dates/times
 import 'package:provider/provider.dart'; // For state management
 import 'package:timezone/timezone.dart' as tz; // For timezone library functionalities
-// Removed: import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 // Import your other project files
 import '../providers/time_settings_provider.dart';
 
 class HomePageContent extends StatefulWidget {
+  // Add key for state preservation if needed by parent (like MainScreen's list)
   const HomePageContent({super.key});
 
   @override
   State<HomePageContent> createState() => _HomePageContentState();
 }
 
-class _HomePageContentState extends State<HomePageContent> {
+// Add the AutomaticKeepAliveClientMixin
+class _HomePageContentState extends State<HomePageContent> with AutomaticKeepAliveClientMixin {
   Timer? _timer;
   DateTime? _displayUtcTime;
   DateTime? _displayLocalTime;
-  String? _displayLocalTimeZoneIdentifier; // Can be name or abbreviation
+  String? _displayLocalTimeZoneAbbr;
 
-  // Removed: _autoDetectedTimeZoneId state variable
-  // Removed: _isFetchingTimeZone state variable
+  String? _autoDetectedTimeZoneId;
+  bool _isFetchingTimeZone = false;
 
   // Formatters
   final DateFormat _timeFormatter = DateFormat('HH:mm:ss');
-  final DateFormat _dateFormatter = DateFormat('EEE, MMM d, yyyy');
+  final DateFormat _dateFormatter = DateFormat('EEE, MMM d, yyyy'); // Example: Wed, Apr 30, 2025
+
+  // --- Add wantKeepAlive override ---
+  @override
+  bool get wantKeepAlive => true; // Keep the state alive!
 
   @override
   void initState() {
-    super.initState();
-    print("HomePageContent: initState - Calling _startTimer");
-    // Removed: Call to _fetchLocalTimeZone()
+    super.initState(); // Don't forget super call!
+    print("HomePageContent: initState - Calling _fetchLocalTimeZone and _startTimer");
+    _fetchLocalTimeZone();
     _startTimer();
-    // Initial update triggered by didChangeDependencies or first timer tick
   }
 
-  // Removed: _fetchLocalTimeZone() function
+  Future<void> _fetchLocalTimeZone() async {
+     // ... (Keep the _fetchLocalTimeZone implementation from previous step) ...
+      if (_isFetchingTimeZone || _autoDetectedTimeZoneId != null) return;
+      setState(() { _isFetchingTimeZone = true; });
+      print("HomePageContent: Fetching local timezone ID...");
+      try {
+        final String currentTimeZone = await FlutterTimezone.getLocalTimezone();
+        print("HomePageContent: ---> Detected Timezone ID: $currentTimeZone <---");
+        if (mounted) {
+          setState(() {
+            _autoDetectedTimeZoneId = currentTimeZone;
+            _isFetchingTimeZone = false;
+            _updateDisplayedTime();
+          });
+        }
+      } catch (e) {
+        print("HomePageContent: ERROR fetching timezone: $e");
+        if (mounted) {
+          setState(() {
+            _autoDetectedTimeZoneId = tz.local.name;
+            _isFetchingTimeZone = false;
+            print("HomePageContent: Using tz.local.name as fallback: $_autoDetectedTimeZoneId");
+            _updateDisplayedTime();
+          });
+        }
+      }
+  }
+
 
   @override
   void didChangeDependencies() {
-    super.didChangeDependencies();
+    super.didChangeDependencies(); // Don't forget super call!
     print("HomePageContent: didChangeDependencies called.");
-    // Trigger initial update if needed
-    if (_displayUtcTime == null) {
-      print("HomePageContent: didChangeDependencies - Calling initial _updateDisplayedTime");
-      _updateDisplayedTime();
+    if (_displayUtcTime == null && !_isFetchingTimeZone && _autoDetectedTimeZoneId != null) {
+         print("HomePageContent: didChangeDependencies - Calling initial update (zone ready)");
+        _updateDisplayedTime();
+    } else if (_displayUtcTime == null) {
+         print("HomePageContent: didChangeDependencies - Waiting for timezone fetch or already initialized");
     }
   }
 
@@ -60,96 +93,82 @@ class _HomePageContentState extends State<HomePageContent> {
   }
 
   void _updateDisplayedTime() {
-    if (!mounted) return;
-
-    // print("HomePageContent: ---> Entering _updateDisplayedTime"); // Keep for debug if needed
-
-    final timeSettings = Provider.of<TimeSettingsProvider>(context, listen: false);
-    final DateTime nowUtc = DateTime.now().toUtc();
-
-    DateTime calculatedLocalTime;
-    String calculatedLocalZoneIdentifier;
-
-    try {
-      if (timeSettings.isLocalTimeAutomatic) {
-        // --- AUTOMATIC MODE (REVERTED to simple version) ---
-        //print("HomePageContent: Using Automatic Mode (Standard DateTime)");
-        final DateTime nowLocal = DateTime.now();
-        calculatedLocalTime = nowLocal;
-        // Use the standard timeZoneName provided by DateTime
-        calculatedLocalZoneIdentifier = nowLocal.timeZoneName; // e.g., "Mountain Daylight Time"
-        //print("HomePageContent: Identifier (Auto): '$calculatedLocalZoneIdentifier'");
-        // --- END REVERT ---
-
-      } else {
-        // --- MANUAL MODE --- (Uses TZDateTime and should provide abbreviation)
-        final location = timeSettings.manualLocation;
-        // print("HomePageContent: Using Manual Location: ${location?.name}");
-        if (location != null) {
-            final tz.TZDateTime manualTzTime = tz.TZDateTime.from(nowUtc, location);
-            calculatedLocalTime = manualTzTime;
-            // Use the abbreviation from TZDateTime directly
-            calculatedLocalZoneIdentifier = manualTzTime.timeZone.abbreviation;
-            // print("DEBUG: TZDateTime timeZone.abbreviation (Manual): '$calculatedLocalZoneIdentifier'");
-
-            // Fallback if abbreviation property is empty
-            if (calculatedLocalZoneIdentifier.isEmpty) {
-                 // print("DEBUG: TZDateTime abbreviation empty (Manual), using timeZoneName fallback.");
-                 calculatedLocalZoneIdentifier = manualTzTime.timeZoneName; // Fallback to ID/Name
-            }
+     // ... (Keep the full _updateDisplayedTime implementation from previous step,
+     //      using .timeZone.abbreviation) ...
+      if (!mounted || _isFetchingTimeZone) return;
+      final timeSettings = Provider.of<TimeSettingsProvider>(context, listen: false);
+      final DateTime nowUtc = DateTime.now().toUtc();
+      DateTime calculatedLocalTime;
+      String calculatedLocalZoneIdentifier;
+      try {
+        if (timeSettings.isLocalTimeAutomatic) {
+          if (_autoDetectedTimeZoneId != null) {
+              final location = tz.getLocation(_autoDetectedTimeZoneId!);
+              final tz.TZDateTime nowTzLocal = tz.TZDateTime.from(nowUtc, location); // Use .from or .now
+              calculatedLocalTime = nowTzLocal;
+              calculatedLocalZoneIdentifier = nowTzLocal.timeZone.abbreviation;
+              if (calculatedLocalZoneIdentifier.isEmpty) {
+                  calculatedLocalZoneIdentifier = nowTzLocal.timeZoneName;
+              }
+          } else {
+              calculatedLocalTime = nowUtc.toLocal();
+              calculatedLocalZoneIdentifier = calculatedLocalTime.timeZoneName;
+          }
         } else {
-            // Fallback for manual mode if location is invalid/not set
-            print("HomePageContent: Manual location invalid, using standard fallback.");
-            calculatedLocalTime = nowUtc.toLocal();
-            calculatedLocalZoneIdentifier = calculatedLocalTime.timeZoneName;
+          final location = timeSettings.manualLocation;
+          if (location != null) {
+              final tz.TZDateTime manualTzTime = tz.TZDateTime.from(nowUtc, location);
+              calculatedLocalTime = manualTzTime;
+              calculatedLocalZoneIdentifier = manualTzTime.timeZone.abbreviation;
+              if (calculatedLocalZoneIdentifier.isEmpty) {
+                   calculatedLocalZoneIdentifier = manualTzTime.timeZoneName;
+              }
+          } else {
+              calculatedLocalTime = nowUtc.toLocal();
+              calculatedLocalZoneIdentifier = calculatedLocalTime.timeZoneName;
+          }
         }
+      } catch (e) {
+          print("HomePageContent: ***** ERROR during time calculation *****");
+          print("HomePageContent: Error: $e");
+          calculatedLocalTime = nowUtc.toLocal();
+          calculatedLocalZoneIdentifier = calculatedLocalTime.timeZoneName;
       }
-    } catch (e, stackTrace) {
-        print("HomePageContent: ***** ERROR during time calculation *****");
-        print("HomePageContent: Error: $e");
-        // Fallback safely
-        calculatedLocalTime = nowUtc.toLocal();
-        calculatedLocalZoneIdentifier = calculatedLocalTime.timeZoneName;
-    }
-
-    // Prepare final values for setState
-    final DateTime finalUtcTime = nowUtc;
-    final DateTime finalLocalTime = calculatedLocalTime;
-    final String finalLocalZoneName = calculatedLocalZoneIdentifier;
-
-    // Update state only if values changed
-    if (_displayUtcTime != finalUtcTime ||
-        _displayLocalTime != finalLocalTime ||
-        _displayLocalTimeZoneIdentifier != finalLocalZoneName) { // Updated variable name
-      setState(() {
-         _displayUtcTime = finalUtcTime;
-         _displayLocalTime = finalLocalTime;
-         _displayLocalTimeZoneIdentifier = finalLocalZoneName; // Updated variable name
-         // print("HomePageContent: setState completed with new values.");
-      });
-    }
-     // print("HomePageContent: ---> Exiting _updateDisplayedTime");
+      final DateTime finalUtcTime = nowUtc;
+      final DateTime finalLocalTime = calculatedLocalTime;
+      final String finalLocalZoneName = calculatedLocalZoneIdentifier;
+      if (mounted && (_displayUtcTime != finalUtcTime || _displayLocalTime != finalLocalTime || _displayLocalTimeZoneAbbr != finalLocalZoneName)) {
+        setState(() {
+           _displayUtcTime = finalUtcTime;
+           _displayLocalTime = finalLocalTime;
+           _displayLocalTimeZoneAbbr = finalLocalZoneName;
+        });
+      }
   }
 
   @override
   void dispose() {
     print("HomePageContent: dispose - Cancelling timer");
     _timer?.cancel();
-    super.dispose();
+    super.dispose(); // Don't forget super call!
   }
 
   @override
   Widget build(BuildContext context) {
-     // print("HomePageContent: build method running");
+    // --- Add super.build(context) for the mixin ---
+    super.build(context);
+    // --- End Add ---
 
-    // Handle initial loading state (simpler now, no async fetch)
-    if (_displayUtcTime == null || _displayLocalTime == null || _displayLocalTimeZoneIdentifier == null) {
-      // print("HomePageContent: build - Times/Zone null, showing loader");
+    print("HomePageContent: build method running");
+
+    // Handle initial loading state
+    if (_displayUtcTime == null || _displayLocalTime == null || _displayLocalTimeZoneAbbr == null || _isFetchingTimeZone) {
+      print("HomePageContent: build - Times/Zone null or fetching, showing loader");
       return const Center(child: CircularProgressIndicator());
     }
 
-    // print("HomePageContent: build - Displaying times ($_displayLocalTimeZoneIdentifier)");
-    // Main UI content
+    print("HomePageContent: build - Displaying times ($_displayLocalTimeZoneAbbr)");
+    // Main UI content - Return ONLY the body content
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -164,8 +183,8 @@ class _HomePageContentState extends State<HomePageContent> {
             const SizedBox(height: 40),
 
             // Local Time Display
-            // Will show name like "Mountain Daylight Time" in Auto, Abbr like "PDT" in Manual
-            Text('Local Time ($_displayLocalTimeZoneIdentifier)', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
+            // Current Context: Wed Apr 30, 2025 10:57 PM MDT
+            Text('Local Time ($_displayLocalTimeZoneAbbr)', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(_dateFormatter.format(_displayLocalTime!), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             Text(_timeFormatter.format(_displayLocalTime!), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
