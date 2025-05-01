@@ -8,8 +8,8 @@ class AppDrawer extends StatelessWidget {
 
     void _showSupportDialog(BuildContext context) {
     // Replace with your actual donation links
-    const String buyMeACoffeeUrl = 'https://www.buymeacoffee.com/YOUR_USERNAME'; // Replace!
-    const String payPalMeUrl = 'https://paypal.me/jacobwerner1?country.x=US&locale.x=en_US'; // Replace!
+    //const String buyMeACoffeeUrl = 'https://www.buymeacoffee.com/YOUR_USERNAME'; // Replace!
+    const String payPalMeUrl = 'https://paypal.me/jacobwerner1?country.x=US&locale.x=en_US';
     // Add other links if needed
 
     // Helper function to launch URL
