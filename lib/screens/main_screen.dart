@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'home_page_content.dart';
 import 'settings_screen.dart';
 import 'conversion_screen.dart';
+import 'world_clock_screen.dart';
 import '../widgets/app_drawer.dart'; // Import the drawer
 
 // This is the main structure holding the persistent AppBar and Drawer
@@ -24,14 +25,16 @@ class _MainScreenState extends State<MainScreen> {
   static const List<Widget> _pageContentOptions = <Widget>[
     HomePageContent(key: ValueKey('home_content')),    // Index 0
     ConversionScreen(key: ValueKey('converter_content')), // Index 1 (Was Settings)
-    SettingsScreen(key: ValueKey('settings_content')),     // Index 2 (Was Converter)
+    WorldClockScreen(key: ValueKey('world_clock_content')), //Index 2
+    SettingsScreen(key: ValueKey('settings_content')),     // Index 3 (Was Converter)
   ];
 
   // Titles for the AppBar corresponding to each page index
   static const List<String> _pageTitles = <String>[
     'Zulu Time Clock', // Index 0
     'Time Converter',  // Index 1 (Was Settings)
-    'Settings',        // Index 2 (Was Converter)
+    'World Clock',     //Index 2
+    'Settings',        // Index 3 (Was Converter)
   ];
   // --- END REORDER ---
 
