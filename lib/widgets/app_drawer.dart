@@ -88,13 +88,28 @@ class AppDrawer extends StatelessWidget {
               color: theme.colorScheme.primary, // Use theme color
             ),
             // --- Ensure this 'child:' line exists ---
-            child: Text(
-              'Menu',
-              style: TextStyle(
-                // Use theme color for text that contrasts
-                color: theme.colorScheme.onPrimary,
-                fontSize: 24,
-              ),
+            child: Column( // Use a Column to stack logo and text
+              mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+              crossAxisAlignment: CrossAxisAlignment.center, // Align text left
+              children: [
+                Image.asset( // Display the logo
+                  'lib/assets/zTimeLogo.png',
+                  height: 100, // Adjust size as needed
+                  
+                  // Optional: Add error handling for image loading
+                  errorBuilder: (crontext, error, stackTrace) {
+                     return const Icon(Icons.error_outline, color: Colors.red, size: 40); // Show error icon
+                  },
+                ),
+                Text(
+                  'Menu', // Keep or adjust text
+                  style: TextStyle(
+                    color: theme.colorScheme.onPrimary,
+                    fontSize: 20, // Adjust size
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
+              ],
             ),
             // --- End Replace Here ---
           ),

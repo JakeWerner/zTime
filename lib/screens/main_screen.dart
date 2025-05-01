@@ -35,7 +35,7 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   static const List<String> _pageTitles = <String>[
-    'Zulu Time Clock', // Index 0     
+    'zTime Clock', // Index 0     
     'Time Converter',  // Index 1
     'World Clock',     // Index 2
     'Settings',        // Index 3
