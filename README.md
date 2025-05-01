@@ -1,6 +1,6 @@
-# zulutime
+# zTime
 
-A new Flutter project.
+An aviation focused flutter app that displays zulu and local times, as well as other features for aviators!
 
 ## Getting Started
 
