@@ -1,42 +1,76 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timezone/timezone.dart' as tz; // Needed for TimeSettingsProvider interaction fallback
+import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
+import 'package:timezone/timezone.dart' as tz; // Needed for TimeSettingsProvider fallback
 
-import '../providers/theme_provider.dart'; // Import ThemeProvider and AppColors
+// Import your other project files (adjust paths if needed)
+import '../providers/theme_provider.dart';
 import '../providers/time_settings_provider.dart';
-import './timezone_selection_screen.dart'; // Import the real screen
+import './timezone_selection_screen.dart'; // For navigating to manual time zone selection
 
+// --- Top-Level Helper function to Launch URL ---
+Future<void> _launchUrl(BuildContext context, String urlString) async {
+  final Uri url = Uri.parse(urlString);
+  // Use context.mounted check before launching if context might become invalid
+  // This check is good practice when using context after an await
+  if (!context.mounted) return;
+
+  if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+    // Handle error - show Snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Could not launch $urlString')),
+    );
+    print('Could not launch $urlString');
+  }
+}
+// --- End Top-Level Function ---
+
+
+// SettingsScreen remains a StatelessWidget as its UI depends on providers
 class SettingsScreen extends StatelessWidget {
+  // Add key for state preservation if needed by MainScreen's list
   const SettingsScreen({super.key});
 
   // Helper function to get display name for ThemeMode
+  // Okay inside StatelessWidget as it's a pure function based on input
   String _themeModeToString(ThemeMode themeMode) {
      switch (themeMode) {
        case ThemeMode.light: return 'Light';
        case ThemeMode.dark: return 'Dark';
        case ThemeMode.system: return 'System Default';
      }
+     // The switch covers all cases, but Dart analysis might want an explicit return.
+     // return 'System Default';
   }
 
   // Helper to get the name of a MaterialColor
+  // Okay inside StatelessWidget
   String _colorToString(MaterialColor color) {
+     // Find the name associated with the color value in our map
      return AppColors.primaryColorOptions.entries
-          .firstWhere((entry) => entry.value == color, orElse: () => MapEntry('Blue', Colors.blue))
-          .key;
+          .firstWhere((entry) => entry.value.value == color.value, // Compare primary value
+             orElse: () => MapEntry('Blue', Colors.blue) // Default if not found
+          )
+          .key; // Return the key (name)
   }
 
 
   @override
   Widget build(BuildContext context) {
-    // This screen is now just the content, no Scaffold/AppBar needed here
+    // This screen is now just the content for the MainScreen body
+    // No Scaffold or AppBar needed here
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0), // Less horizontal padding for ListTiles
+      // Use ListView padding instead of body padding if preferred
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
       child: ListView(
+        // Consider adding padding to the ListView instead of the outer Padding
+        // padding: const EdgeInsets.all(16.0),
         children: <Widget>[
+
           // --- Appearance Section Header ---
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0, bottom: 8.0),
             child: Text(
               'Appearance',
               style: TextStyle(
@@ -48,9 +82,9 @@ class SettingsScreen extends StatelessWidget {
 
           // --- Theme Mode Setting ---
           ListTile(
-            leading: const Icon(Icons.brightness_6),
+            leading: const Icon(Icons.brightness_6_outlined),
             title: const Text('Theme Mode'),
-            trailing: Consumer<ThemeProvider>( // Consumer only around the dropdown
+            trailing: Consumer<ThemeProvider>(
               builder: (context, themeProvider, child) {
                 return DropdownButton<ThemeMode>(
                   value: themeProvider.themeMode,
@@ -78,13 +112,12 @@ class SettingsScreen extends StatelessWidget {
 
           // --- Accent Color Setting ---
           ListTile(
-            leading: const Icon(Icons.color_lens),
+            leading: const Icon(Icons.color_lens_outlined),
             title: const Text('Accent Color'),
-            trailing: Consumer<ThemeProvider>( // Consumer only around the dropdown
+            trailing: Consumer<ThemeProvider>(
                builder: (context, themeProvider, child) {
                   return DropdownButton<MaterialColor>(
-                    value: themeProvider.primaryColor, // Current color from provider
-                    // Generate dropdown items from AppColors map
+                    value: themeProvider.primaryColor,
                     items: AppColors.primaryColorOptions.entries.map((entry) {
                         final String colorName = entry.key;
                         final MaterialColor colorValue = entry.value;
@@ -92,23 +125,12 @@ class SettingsScreen extends StatelessWidget {
                            value: colorValue,
                            child: Row( // Show color swatch and name
                               children: [
-                                 Container( // This is the color swatch container
-                                  width: 16,
-                                  height: 16,
-                                  // --- Ensure you are using 'decoration:' like this ---
-                                  decoration: BoxDecoration(
-                                    // The color goes INSIDE BoxDecoration
-                                    color: colorValue,
-                                    // The border goes INSIDE BoxDecoration
-                                    border: Border.all(
-                                      color: Theme.of(context).dividerColor, // Example border color
-                                      width: 0.5,
+                                 Container(width: 16, height: 16,
+                                    decoration: BoxDecoration(
+                                      color: colorValue,
+                                      border: Border.all(color: Theme.of(context).dividerColor, width: 0.5)
                                     ),
-                                    // Optional: You could add rounded corners here too
-                                    // borderRadius: BorderRadius.circular(2),
-                                  ),
-                                  // --- There should be NO 'border:' parameter directly under Container ---
-                                ),
+                                 ),
                                  const SizedBox(width: 10),
                                  Text(colorName),
                               ],
@@ -117,7 +139,6 @@ class SettingsScreen extends StatelessWidget {
                     }).toList(),
                     onChanged: (MaterialColor? newColor) {
                        if (newColor != null) {
-                          // Use context.read in callbacks
                           context.read<ThemeProvider>().setPrimaryColor(newColor);
                        }
                     },
@@ -129,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
 
           // --- Time Settings Section Header ---
            Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0), // Added more top padding
             child: Text(
               'Time Settings',
               style: TextStyle(
@@ -144,11 +165,11 @@ class SettingsScreen extends StatelessWidget {
           Consumer<TimeSettingsProvider>(
             builder: (context, timeSettingsProvider, child) {
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.start, // Align sub-header
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Padding( // Add padding for sub-header
+                   Padding( // Sub-header for clarity
                      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0, bottom: 0),
-                     child: Text('Local Time Display Source', style: Theme.of(context).textTheme.bodyLarge),
+                     child: Text('Home Screen Local Time Source', style: Theme.of(context).textTheme.titleMedium),
                    ),
                    RadioListTile<bool>(
                     title: const Text('Automatic (Use Device Setting)'),
@@ -159,6 +180,7 @@ class SettingsScreen extends StatelessWidget {
                         context.read<TimeSettingsProvider>().setAutomaticLocalTime();
                       }
                     },
+                    controlAffinity: ListTileControlAffinity.trailing, // Standard placement
                   ),
                   RadioListTile<bool>(
                     title: const Text('Manual'),
@@ -166,44 +188,74 @@ class SettingsScreen extends StatelessWidget {
                     groupValue: timeSettingsProvider.isLocalTimeAutomatic,
                     onChanged: (bool? value) {
                       if (value == false) {
-                        // When switching to manual, ensure a valid zone is set
-                        // If no manual zone exists, keep current auto zone or default
                          String currentManualOrDefault = timeSettingsProvider.manualTimeZoneId ?? tz.local.name;
                          context.read<TimeSettingsProvider>().setManualLocalTime(currentManualOrDefault);
                       }
                     },
+                    controlAffinity: ListTileControlAffinity.trailing,
                   ),
 
                   // Show manual selection only if Manual mode is selected
-                  // Use AnimatedOpacity for smoother transition
                   AnimatedOpacity(
                     opacity: !timeSettingsProvider.isLocalTimeAutomatic ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 300),
-                    child: !timeSettingsProvider.isLocalTimeAutomatic
-                      ? ListTile(
-                          leading: const Icon(Icons.language),
+                    // Use Visibility to prevent interaction when hidden
+                    child: Visibility(
+                      visible: !timeSettingsProvider.isLocalTimeAutomatic,
+                      child: ListTile(
+                          leading: const Icon(Icons.language_outlined),
                           title: const Text('Selected Manual Zone'),
                           subtitle: Text(timeSettingsProvider.manualTimeZoneId ?? 'Please select'),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () async {
-                             // Navigate to Time Zone Selection Screen
                              final selectedZone = await Navigator.push<String>(
                                context,
-                               MaterialPageRoute(builder: (context) => const TimeZoneSelectionScreen()), // Use the real screen
+                               MaterialPageRoute(builder: (context) => const TimeZoneSelectionScreen()), // Navigate to picker
                              );
                              if (selectedZone != null && context.mounted) {
                                context.read<TimeSettingsProvider>().setManualLocalTime(selectedZone);
                              }
                           },
-                        )
-                      : const SizedBox.shrink(), // Don't show if Automatic
+                        ),
                     )
+                  ),
                 ],
               );
             }
           ),
           const Divider(),
-          // Add more settings ListTiles here...
+
+          // --- Legal Section Header ---
+           Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+            child: Text(
+              'Legal',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16),
+            ),
+          ),
+          // --- Privacy Policy Link ---
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy Policy'),
+            trailing: const Icon(Icons.open_in_new_outlined, size: 18), // External link icon
+            onTap: () {
+              // --- Replace with your actual hosted URL ---
+              const String privacyPolicyUrl = 'https://github.com/JakeWerner/zTime/blob/master/PrivacyPolicy1MAY2025.md';
+              // --- ------------------------------------ ---
+              if (privacyPolicyUrl != 'https://github.com/JakeWerner/zTime/blob/master/PrivacyPolicy1MAY2025.md') {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   const SnackBar(content: Text('Privacy Policy URL not set yet!')),
+                 );
+                 return;
+              }
+              // Call the top-level function
+              _launchUrl(context, privacyPolicyUrl);
+            },
+          ),
+          const Divider(), // Optional final divider
         ],
       ),
     );
