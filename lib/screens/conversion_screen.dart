@@ -35,7 +35,6 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
   final DateFormat _dateFormatter = DateFormat('MM-dd-yyyy');
   final DateFormat _resultDateTimeFormatter = DateFormat('MM-dd-yyyy HH:mm Z');
 
-  // --- Add wantKeepAlive override ---
   @override
   bool get wantKeepAlive => true; // Keep the state alive!
 
@@ -137,10 +136,8 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
     }
   }
 
-
   // --- Action Handlers (_performConversion, _swapTimeZones, _clearConversion) ---
    // Keep these methods as they were in the previous full file example
-
   void _performConversion() {
      if (_sourceTimeZoneId == null || _targetTimeZoneId == null) { /* ... */ return; }
      if (_sourceTimeZoneId == _targetTimeZoneId) { /* ... */ return; }
@@ -185,14 +182,10 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
 
   @override
   Widget build(BuildContext context) {
-    // --- Add super.build(context) for the mixin ---
     super.build(context);
-    // --- End Add ---
-
     // Ensure defaults are set if somehow null
     _sourceTimeZoneId ??= _initialSourceTimeZoneId;
     _targetTimeZoneId ??= _initialTargetTimeZoneId;
-
     // Return ONLY the body content (no Scaffold/AppBar here)
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),

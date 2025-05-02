@@ -160,16 +160,12 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
           double mhDeg = (_isVariationEast) ? (calculatedThDeg - variation) : (calculatedThDeg + variation);
           mhDeg = (mhDeg + 360) % 360; mhStr = "${mhDeg.toStringAsFixed(0)}°";
           if (deviation != null) { double chDeg = mhDeg + deviation; chDeg = (chDeg + 360) % 360; chStr = "${chDeg.toStringAsFixed(0)}°"; } }
-
-      // --- Update state unconditionally if mounted ---
-      //print("[DEBUG WIDGET] Setting Nav State: WCA='$wcaStr', TH='$thStr', GS='$gsStr', MH='$mhStr', CH='$chStr'");
       if (mounted) {
         setState(() {
           _wcaResult = wcaStr; _trueHeadingResult = thStr; _groundSpeedResult = gsStr;
           _magHeadingResult = mhStr; _compHeadingResult = chStr;
         });
       }
-      // --- End Update ---
   }
 
   // --- Build Method ---

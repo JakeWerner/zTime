@@ -155,19 +155,12 @@ class _HomePageContentState extends State<HomePageContent> with AutomaticKeepAli
 
   @override
   Widget build(BuildContext context) {
-    // --- Add super.build(context) for the mixin ---
     super.build(context);
-    // --- End Add ---
-
-    print("HomePageContent: build method running");
-
     // Handle initial loading state
     if (_displayUtcTime == null || _displayLocalTime == null || _displayLocalTimeZoneAbbr == null || _isFetchingTimeZone) {
       print("HomePageContent: build - Times/Zone null or fetching, showing loader");
       return const Center(child: CircularProgressIndicator());
     }
-
-    print("HomePageContent: build - Displaying times ($_displayLocalTimeZoneAbbr)");
     // Main UI content - Return ONLY the body content
     return Center(
       child: Padding(
@@ -181,9 +174,7 @@ class _HomePageContentState extends State<HomePageContent> with AutomaticKeepAli
             Text(_dateFormatter.format(_displayUtcTime!), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             Text('${_timeFormatter.format(_displayUtcTime!)} Z', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             const SizedBox(height: 40),
-
             // Local Time Display
-            // Current Context: Wed Apr 30, 2025 10:57 PM MDT
             Text('Local Time ($_displayLocalTimeZoneAbbr)', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(_dateFormatter.format(_displayLocalTime!), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),

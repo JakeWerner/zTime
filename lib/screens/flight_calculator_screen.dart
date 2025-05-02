@@ -41,21 +41,9 @@ class _FlightCalculatorScreenState extends State<FlightCalculatorScreen> with Si
   @override
   Widget build(BuildContext context) {
     super.build(context); // Needed for KeepAlive
-
     // This widget provides the content body for the flight calculators page
     // within the MainScreen shell.
     return Scaffold(
-      // --- REMOVE the nested AppBar ---
-      // appBar: AppBar(
-      //   title: null,
-      //   automaticallyImplyLeading: false,
-      //   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      //   elevation: 0,
-      //   bottom: TabBar( /* ... */ ),
-      // ),
-      // --- End Remove ---
-
-      // --- CHANGE body to a Column ---
       body: Column(
         // Column takes children vertically
         children: <Widget>[
@@ -75,7 +63,6 @@ class _FlightCalculatorScreenState extends State<FlightCalculatorScreen> with Si
           ),
           // Add a divider below the tab bar for visual separation if desired
           // const Divider(height: 1, thickness: 1),
-
           // 2. Use Expanded for the TabBarView to fill remaining space
           Expanded(
             child: TabBarView(
@@ -85,8 +72,6 @@ class _FlightCalculatorScreenState extends State<FlightCalculatorScreen> with Si
           ),
         ],
       ),
-      // --- End Change ---
-
       // Remove FAB if it was here - FAB should belong to MainScreen or be omitted
       // floatingActionButton: FloatingActionButton(...)
     );

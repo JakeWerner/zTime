@@ -7,10 +7,8 @@ class AppDrawer extends StatelessWidget {
   const AppDrawer({required this.onSelectItem, super.key});
 
     void _showSupportDialog(BuildContext context) {
-    // Replace with your actual donation links
     //const String buyMeACoffeeUrl = 'https://www.buymeacoffee.com/YOUR_USERNAME'; // Replace!
     const String payPalMeUrl = 'https://paypal.me/jacobwerner1?country.x=US&locale.x=en_US';
-    // Add other links if needed
 
     // Helper function to launch URL
     Future<void> launchURL(String urlString) async {
@@ -38,16 +36,6 @@ class AppDrawer extends StatelessWidget {
                 const SizedBox(height: 10),
                 const Text('If you find this app helpful, please consider supporting its development. Donations are voluntary and greatly appreciated!'),
                 const SizedBox(height: 20),
-                // Add buttons for your chosen platforms
-                /*ElevatedButton.icon(
-                   icon: const Icon(Icons.coffee_outlined), // Example icon
-                   label: const Text('Buy Me a Coffee'),
-                   onPressed: () {
-                      Navigator.of(ctx).pop(); // Close dialog before launching
-                      launchURL(buyMeACoffeeUrl);
-                   },
-                   style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 36)), // Make button wider
-                ), */
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.paypal), // Example icon
@@ -58,7 +46,6 @@ class AppDrawer extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 36)),
                 ),
-                // Add more buttons for Ko-fi, Patreon etc. if desired
               ],
             ),
           ),
@@ -84,7 +71,6 @@ class AppDrawer extends StatelessWidget {
         children: <Widget>[
           DrawerHeader( // Use DrawerHeader, not const if using theme data below
             decoration: BoxDecoration(
-              // Use theme color for header background
               color: theme.colorScheme.primary, // Use theme color
             ),
             // --- Ensure this 'child:' line exists ---
@@ -95,8 +81,6 @@ class AppDrawer extends StatelessWidget {
                 Image.asset( // Display the logo
                   'lib/assets/zTimeLogo.png',
                   height: 100, // Adjust size as needed
-                  
-                  // Optional: Add error handling for image loading
                   errorBuilder: (crontext, error, stackTrace) {
                      return const Icon(Icons.error_outline, color: Colors.red, size: 40); // Show error icon
                   },
@@ -111,7 +95,6 @@ class AppDrawer extends StatelessWidget {
                 ),
               ],
             ),
-            // --- End Replace Here ---
           ),
           ListTile( // Index 0
             leading: const Icon(Icons.home_outlined),
