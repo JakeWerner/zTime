@@ -177,7 +177,6 @@ By clicking "Agree", you acknowledge that you have read, understood, and agree t
         if (mounted) {
           setState(() {
             _selectedIndex = index;
-            print("MainScreen: Switched to page index $index");
           });
         }
       });
@@ -189,7 +188,6 @@ By clicking "Agree", you acknowledge that you have read, understood, and agree t
   // --- Build Method ---
   @override
   Widget build(BuildContext context) {
-     print("MainScreen build: Displaying page index = $_selectedIndex");
     return Scaffold(
       // AppBar remains constant, title updates based on selected index
       appBar: AppBar(
