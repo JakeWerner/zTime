@@ -1,7 +1,7 @@
 // test/widget_tests/wind_heading_tab_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zulutime/widgets/flight_calcs/wind_heading_tab.dart'; // Adjust import
+import 'package:ztime/widgets/flight_calcs/wind_heading_tab.dart'; // Adjust import
 
 // Helper to build the widget in a testable environment
 Widget buildTestableWidget(Widget child) {
