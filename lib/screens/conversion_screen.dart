@@ -13,9 +13,7 @@ class ConversionScreen extends StatefulWidget {
   State<ConversionScreen> createState() => _ConversionScreenState();
 }
 
-// Add the AutomaticKeepAliveClientMixin
 class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepAliveClientMixin {
-  // --- State variables ---
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   String? _sourceTimeZoneId;
@@ -26,7 +24,6 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
   String? _initialTargetTimeZoneId;
 
   // --- Curated Time Zone Data ---
-  // Using late final is fine here as they are initialized from a final map
   late final Map<String, String> commonTimeZones;
   late final List<String> _commonTimeZoneIds;
   late final Map<String, String> _idToDisplayName;
@@ -41,7 +38,6 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
   @override
   void initState() {
     super.initState(); // Don't forget super call!
-    print("ConversionScreen: initState START");
 
     // Initialize the map directly here or reference from a constants file
     commonTimeZones = {
@@ -65,16 +61,13 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
     try {
       // Initialize derived lists/maps first
       _idToDisplayName = commonTimeZones.map((key, value) => MapEntry(value, key));
-      print("ConversionScreen: initState - Created reverse map");
 
       _commonTimeZoneIds = commonTimeZones.values.toList()
         ..sort((a, b) => _getDisplayName(a, fallbackToId: true)
             .compareTo(_getDisplayName(b, fallbackToId: true)));
-      print("ConversionScreen: initState - Sorted IDs");
 
       // Determine and store initial defaults
       final initialProvider = Provider.of<TimeSettingsProvider>(context, listen: false);
-      print("ConversionScreen: initState - Got provider");
       String defaultSourceId = 'America/Denver';
       if (!initialProvider.isLocalTimeAutomatic && initialProvider.manualTimeZoneId != null) {
         if (_commonTimeZoneIds.contains(initialProvider.manualTimeZoneId!)){
@@ -88,12 +81,10 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
       }
       _initialSourceTimeZoneId = _commonTimeZoneIds.contains(defaultSourceId) ? defaultSourceId : 'America/Denver';
       _initialTargetTimeZoneId = 'UTC';
-      print("ConversionScreen: initState - Determined initial IDs: $_initialSourceTimeZoneId, $_initialTargetTimeZoneId");
 
       // Set initial state values
       _sourceTimeZoneId = _initialSourceTimeZoneId;
       _targetTimeZoneId = _initialTargetTimeZoneId;
-      print("ConversionScreen: initState - Set state IDs");
 
     } catch (e, stackTrace) {
        print("ConversionScreen: ***** ERROR in initState *****");
@@ -105,7 +96,6 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
        _sourceTimeZoneId ??= 'UTC';
        _targetTimeZoneId ??= 'UTC';
     }
-    print("ConversionScreen: initState END");
   }
 
   // Helper to display the common name
@@ -141,14 +131,11 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
   void _performConversion() {
      if (_sourceTimeZoneId == null || _targetTimeZoneId == null) { /* ... */ return; }
      if (_sourceTimeZoneId == _targetTimeZoneId) { /* ... */ return; }
-     print("Performing conversion from $_sourceTimeZoneId to $_targetTimeZoneId");
      try {
        final sourceLocation = tz.getLocation(_sourceTimeZoneId!);
        final targetLocation = tz.getLocation(_targetTimeZoneId!);
        final sourceDateTime = tz.TZDateTime(sourceLocation, _selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedTime.hour, _selectedTime.minute);
-       print("Source DateTime interpreted as: ${sourceDateTime.toString()}");
        final resultDateTime = tz.TZDateTime.from(sourceDateTime, targetLocation);
-       print("Conversion Result: ${resultDateTime.toString()}");
        setState(() { _convertedDateTime = resultDateTime; });
      } catch (e) {
         debugPrint("Time conversion error: $e");
@@ -159,7 +146,6 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
 
   void _swapTimeZones() {
     if (_sourceTimeZoneId == null || _targetTimeZoneId == null) return;
-    print("Swapping zones: $_sourceTimeZoneId <-> $_targetTimeZoneId");
     setState(() {
       final String? temp = _sourceTimeZoneId;
       _sourceTimeZoneId = _targetTimeZoneId;
@@ -169,7 +155,6 @@ class _ConversionScreenState extends State<ConversionScreen> with AutomaticKeepA
   }
 
   void _clearConversion() {
-     print("Clearing conversion fields.");
     setState(() {
       _selectedDate = DateTime.now();
       _selectedTime = TimeOfDay.now();
