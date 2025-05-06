@@ -1,6 +1,7 @@
 // lib/widgets/flight_calcs/altitude_atmos_tab.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
 
 // Enums
 enum TempUnit { C, F }
@@ -93,13 +94,73 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
     } catch (e) { return null; }
   }
 
+// In _AltitudeAtmosTabState class within lib/widgets/flight_calcs/altitude_atmos_tab.dart
+
   double? _calculateDensityAltitude() {
-    if (_pressureAltitudeFt == null || _oat == null) return null;
+    if (_pressureAltitudeFt == null || _oat == null || _dewPoint == null) return null;
+
     try {
+      // --- Ensure inputs are in Celsius for internal calculation ---
       double oatC = (_tempUnit == TempUnit.F) ? ((_oat! - 32) * 5 / 9) : _oat!;
-      double isaTempC = 15.0 - (2 * (_pressureAltitudeFt! / 1000.0));
-      return _pressureAltitudeFt! + (120 * (oatC - isaTempC)); // Approx 120 ft per degree C deviation
-    } catch (e) { return null; }
+      double dewPointC = (_tempUnit == TempUnit.F) ? ((_dewPoint! - 32) * 5 / 9) : _dewPoint!;
+
+      // Ensure dew point is not greater than OAT (physical impossibility for this formula)
+      if (dewPointC > oatC) {
+        // Or handle as an error, for now, treat as dry air or return null
+        print("Warning: Dew point ($dewPointC C) > OAT ($oatC C). Calculating DA as dry or returning null.");
+        // Calculate dry air DA as a fallback if this condition is met.
+        double isaTempC_dry = 15.0 - (1.98 * (_pressureAltitudeFt! / 1000.0));
+        return _pressureAltitudeFt! + (118.8 * (oatC - isaTempC_dry));
+      }
+
+
+      // --- Constants ---
+      const double P0_hPa = 1013.25; // Standard sea level pressure in hPa
+      const double T0_K = 288.15;   // Standard sea level temperature in Kelvin
+      const double L_std_K_per_m = 0.0065;  // Standard temperature lapse rate in K/m
+      const double epsilon = 0.62198; // Ratio of molar masses (water vapor / dry air)
+
+      // --- 1. Convert PA to meters ---
+      double paM = _pressureAltitudeFt! * 0.3048;
+
+      // --- 2. Actual Vapor Pressure (e) from Dew Point (Magnus formula, hPa) ---
+      // Using exp from dart:math
+      double e_hPa = 6.112 * exp((17.67 * dewPointC) / (dewPointC + 243.5));
+
+      // --- 3. Approximate Air Pressure at PA (pressureAtPa_hPa) ---
+      // This is the ISA pressure at the given pressure altitude level
+      double pressureAtPa_hPa = P0_hPa * pow((1 - (L_std_K_per_m * paM) / T0_K), 5.25588);
+      if (pressureAtPa_hPa <= 0) { // Avoid division by zero or invalid pressure
+          print("Warning: Calculated pressureAtPa_hPa is non-positive ($pressureAtPa_hPa). Using dry DA.");
+          double isaTempC_dry = 15.0 - (2.0 * (_pressureAltitudeFt! / 1000.0));
+          return _pressureAltitudeFt! + (120 * (oatC - isaTempC_dry));
+      }
+
+
+      // --- 4. Virtual Temperature (TvK) in Kelvin ---
+      double oatK = oatC + 273.15;
+      double virtualTempK = oatK / (1 - (e_hPa / pressureAtPa_hPa) * (1 - epsilon));
+      double virtualTempC = virtualTempK - 273.15;
+
+      // --- 5. ISA Temperature at PA (isaTempC_at_PA) ---
+      // Using 2.0°C/1000ft lapse rate for consistency with simple E6B rules
+      double isaTempC_at_PA = 15.0 - (2.0 * (_pressureAltitudeFt! / 1000.0));
+
+      // --- 6. Final Density Altitude (DA) using Virtual Temperature ---
+      // This formula structure DA = PA + Factor * (EffectiveTemp - ISA_Temp) is a common way.
+      double densityAltitudeFt = _pressureAltitudeFt! + (120 * (virtualTempC - isaTempC_at_PA));
+
+      // print("DEBUG DA: PA_ft=${_pressureAltitudeFt}, OAT_C=$oatC, DP_C=$dewPointC");
+      // print("DEBUG DA: e_hPa=$e_hPa, pressureAtPa_hPa=$pressureAtPa_hPa");
+      // print("DEBUG DA: virtualTempC=$virtualTempC, isaTempC_at_PA=$isaTempC_at_PA");
+      // print("DEBUG DA: Calculated DA=$densityAltitudeFt");
+
+      return densityAltitudeFt;
+
+    } catch (e, s) {
+      print("Error in _calculateDensityAltitude: $e\n$s");
+      return null; // Return null or handle error appropriately
+    }
   }
 
   double? _calculateCloudBase() {

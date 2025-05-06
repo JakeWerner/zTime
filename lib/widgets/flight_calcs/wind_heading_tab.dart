@@ -85,46 +85,56 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
   double _degreesToRadians(double degrees) => degrees * (pi / 180.0);
   double _radiansToDegrees(double radians) => (radians * (180.0 / pi));
 
-  // --- Wind Component Calculation ---
-  void _calculateWindComponents() {
-     final double? heading = double.tryParse(_wcHdgController.text);
-     final double? windDir = double.tryParse(_wcWindDirController.text);
-     final double? windSpd = double.tryParse(_wcWindSpdController.text);
+  // In _WindHeadingTabState class
 
-     String newHeadwindResult = "--";
-     String newCrosswindResult = "--";
+    void _calculateWindComponents() {
+      final double? heading = double.tryParse(_wcHdgController.text);
+      final double? windDir = double.tryParse(_wcWindDirController.text);
+      final double? windSpd = double.tryParse(_wcWindSpdController.text);
 
-     if (heading != null && windDir != null && windSpd != null && windSpd >= 0) {
-       double angleDiffDegrees = windDir - heading;
-       while (angleDiffDegrees <= -180) angleDiffDegrees += 360;
-       while (angleDiffDegrees > 180) angleDiffDegrees -= 360;
-       double angleDiffRadians = _degreesToRadians(angleDiffDegrees);
+      String newHeadwindResult = "--";
+      String newCrosswindResult = "--";
 
-       // Component along heading axis. Negative = Opposing = Headwind. Positive = Assisting = Tailwind.
-       double alongAxisComponent = windSpd * cos(angleDiffRadians);
-       double crossAxisComponent = windSpd * sin(angleDiffRadians);
+      if (heading != null && windDir != null && windSpd != null && windSpd >= 0) {
+        double angleDiffDegrees = windDir - heading;
+        // Normalize angle to be between -180 and +180
+        // This helps with the interpretation of sin/cos for crosswind direction
+        while (angleDiffDegrees <= -180) angleDiffDegrees += 360;
+        while (angleDiffDegrees > 180) angleDiffDegrees -= 360;
+        double angleDiffRadians = _degreesToRadians(angleDiffDegrees);
 
-       // --- CORRECTED Headwind/Tailwind Logic ---
-       if (alongAxisComponent <= 0) { // Negative or zero component means headwind
-         newHeadwindResult = "Headwind ${(-alongAxisComponent).toStringAsFixed(1)} kts";
-       } else { // Positive component means tailwind
-         newHeadwindResult = "Tailwind ${alongAxisComponent.toStringAsFixed(1)} kts";
-       }
-       // --- End Correction ---
+        // Component of wind ALONG the aircraft's track/heading
+        // Positive means wind is coming FROM ahead (Headwind)
+        // Negative means wind is coming FROM behind (Tailwind)
+        double alongAxisComponent = windSpd * cos(angleDiffRadians);
 
-       if (crossAxisComponent >= 0) { // Positive = From Right
+        // Component of wind PERPENDICULAR to aircraft's track/heading
+        // Positive means wind is FROM the right
+        // Negative means wind is FROM the left
+        double crossAxisComponent = windSpd * sin(angleDiffRadians);
+
+        // --- DEFINITIVELY CORRECTED Headwind/Tailwind Logic ---
+        if (alongAxisComponent >= 0) { // Wind has a component FROM the front or directly sideways
+          newHeadwindResult = "Headwind ${alongAxisComponent.toStringAsFixed(1)} kts";
+        } else { // Wind has a component FROM the rear
+          newHeadwindResult = "Tailwind ${(-alongAxisComponent).toStringAsFixed(1)} kts"; // Use absolute value for display
+        }
+        // --- End Correction ---
+
+        if (crossAxisComponent >= 0) { // Positive component is FROM the Right
           newCrosswindResult = "From Right ${crossAxisComponent.toStringAsFixed(1)} kts";
-       } else { // Negative = From Left
-          newCrosswindResult = "From Left ${(-crossAxisComponent).toStringAsFixed(1)} kts";
-       }
-     }
-      if (mounted && (_headwindResult != newHeadwindResult || _crosswindResult != newCrosswindResult)) {
-         setState(() {
-           _headwindResult = newHeadwindResult;
-           _crosswindResult = newCrosswindResult;
-         });
+        } else { // Negative component is FROM the Left
+          newCrosswindResult = "From Left ${(-crossAxisComponent).toStringAsFixed(1)} kts"; // Use absolute value
+        }
       }
-  }
+
+      if (mounted && (_headwindResult != newHeadwindResult || _crosswindResult != newCrosswindResult)) {
+        setState(() {
+          _headwindResult = newHeadwindResult;
+          _crosswindResult = newCrosswindResult;
+        });
+      }
+    }
 
   // --- Combined Nav Calculation ---
   void _calculateAllNav() {
