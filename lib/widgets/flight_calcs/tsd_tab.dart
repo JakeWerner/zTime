@@ -1,6 +1,8 @@
 // lib/widgets/flight_calcs/tsd_tab.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:ztime/providers/theme_provider.dart'; // Import your ThemeProvider
 
 enum TsdMode { calculateTime, calculateSpeed, calculateDistance }
 
@@ -135,6 +137,10 @@ class _TsdTabState extends State<TsdTab> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false); // Or context.watch if you need it to rebuild on theme change itself
+    final MaterialColor accentColor = themeProvider.primaryColor;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
        onTap: () => FocusScope.of(context).unfocus(),
        child: SingleChildScrollView(
@@ -155,9 +161,25 @@ class _TsdTabState extends State<TsdTab> with AutomaticKeepAliveClientMixin {
                    setState(() { _mode = newSelection.first; _calculate(); });
                  },
                  // --- Add Style for Border ---
-                 style: SegmentedButton.styleFrom(
-                    side: BorderSide( color: Theme.of(context).colorScheme.outline.withOpacity(0.8), width: 1.0),
-                 ),
+                style: SegmentedButton.styleFrom(
+                  // --- Overall border for the button group (from previous fix) ---
+                  side: BorderSide(
+                    color: colorScheme.outline.withOpacity(0.8), // Or Theme.of(context).dividerColor
+                    width: 1.0,
+                  ),
+
+                  // --- Color for SELECTED segment's icon and text ---S
+                  selectedForegroundColor: accentColor,
+
+                  // --- Background color for SELECTED segment ---
+                  selectedBackgroundColor: accentColor.withOpacity(0.12), // A light, translucent shade of the accent color
+
+                  // --- Color for UNSELECTED segment's icon and text ---
+                  foregroundColor: colorScheme.onSurface.withOpacity(0.7),
+
+                  // --- Background color for UNSELECTED segments ---
+                  backgroundColor: Colors.transparent,
+                ),
                  // --- End Style ---
                ),
                const SizedBox(height: 24), // Increased spacing

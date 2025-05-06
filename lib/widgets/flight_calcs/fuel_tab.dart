@@ -1,6 +1,8 @@
 // lib/widgets/flight_calcs/fuel_tab.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:ztime/providers/theme_provider.dart'; // Import your ThemeProvider
 
 enum FuelCalcMode { endurance, required, rate }
 enum FuelUnit { gal, L } // US Gallons, Liters
@@ -130,6 +132,9 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
     super.build(context);
     String fuelUnitSuffix = _fuelUnit == FuelUnit.gal ? 'Gal' : 'L';
     String rateUnitSuffix = _fuelUnit == FuelUnit.gal ? 'Gal/Hr' : 'L/Hr';
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false); // Or context.watch if you need it to rebuild on theme change itself
+    final MaterialColor accentColor = themeProvider.primaryColor;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
        onTap: () => FocusScope.of(context).unfocus(),
@@ -142,7 +147,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
              const SizedBox(height: 8),
              SegmentedButton<FuelCalcMode>(
                segments: const <ButtonSegment<FuelCalcMode>>[
-                 ButtonSegment<FuelCalcMode>(value: FuelCalcMode.endurance, label: Text('Endurance'), icon: Icon(Icons.timer_outlined)),
+                 ButtonSegment<FuelCalcMode>(value: FuelCalcMode.endurance, label: Text('Max Time'), icon: Icon(Icons.timer_outlined)),
                  ButtonSegment<FuelCalcMode>(value: FuelCalcMode.required, label: Text('Fuel Req.'), icon: Icon(Icons.local_gas_station_outlined)),
                  ButtonSegment<FuelCalcMode>(value: FuelCalcMode.rate, label: Text('Burn Rate'), icon: Icon(Icons.speed_outlined)),
                ],
@@ -151,9 +156,25 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
                  setState(() { _mode = newSelection.first; _calculate(); });
                },
                 // --- Add Style for Border ---
-               style: SegmentedButton.styleFrom(
-                  side: BorderSide( color: Theme.of(context).colorScheme.outline.withOpacity(0.8), width: 1.0),
-               ),
+                style: SegmentedButton.styleFrom(
+                  // --- Overall border for the button group (from previous fix) ---
+                  side: BorderSide(
+                    color: colorScheme.outline.withOpacity(0.8), // Or Theme.of(context).dividerColor
+                    width: 1.0,
+                  ),
+
+                  // --- Color for SELECTED segment's icon and text ---S
+                  selectedForegroundColor: accentColor,
+
+                  // --- Background color for SELECTED segment ---
+                  selectedBackgroundColor: accentColor.withOpacity(0.12), // A light, translucent shade of the accent color
+
+                  // --- Color for UNSELECTED segment's icon and text ---
+                  foregroundColor: colorScheme.onSurface.withOpacity(0.7),
+
+                  // --- Background color for UNSELECTED segments ---
+                  backgroundColor: Colors.transparent,
+                ),
                // --- End Style ---
              ),
              const SizedBox(height: 20),
@@ -186,7 +207,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
               Center( /* ... Result display same as before ... */
                 child: Column(
                   children: [
-                     Text( 'Calculated ${ _mode == FuelCalcMode.endurance ? 'Endurance' : (_mode == FuelCalcMode.required ? 'Fuel Required' : 'Burn Rate') }', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).hintColor),),
+                     Text( 'Calculated ${ _mode == FuelCalcMode.endurance ? 'Max Time' : (_mode == FuelCalcMode.required ? 'Fuel Required' : 'Burn Rate') }', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).hintColor),),
                      const SizedBox(height: 4),
                      Text( _resultText, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary), textAlign: TextAlign.center),
                   ],

@@ -1,6 +1,8 @@
 // lib/widgets/flight_calcs/wind_heading_tab.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:ztime/providers/theme_provider.dart'; // Import your ThemeProvider
 import 'dart:math'; // For sin, cos, asin, sqrt, pow, pi
 
 // Enums
@@ -173,6 +175,9 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
   Widget build(BuildContext context) {
     super.build(context); // KeepAlive
     String speedUnitSuffix = _speedUnit == SpeedUnit.kts ? "kts" : "mph";
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false); // Or context.watch if you need it to rebuild on theme change itself
+    final MaterialColor accentColor = themeProvider.primaryColor;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
      return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -224,7 +229,23 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
                            onSelectionChanged: (Set<SpeedUnit> newSelection) {
                              setState(() { _speedUnit = newSelection.first; _calculateAllNav(); });
                            },
-                           style: SegmentedButton.styleFrom( side: BorderSide( color: Theme.of(context).colorScheme.outline.withOpacity(0.8), width: 1.0), minimumSize: const Size(100, 36)),
+                           style: SegmentedButton.styleFrom(
+                            minimumSize: const Size(100, 36),
+                            // --- Overall border for the button group (from previous fix) ---
+                            side: BorderSide(
+                              color: colorScheme.outline.withOpacity(0.8), // Or Theme.of(context).dividerColor
+                              width: 1.0,
+                            ),
+                            // --- Color for SELECTED segment's icon and text ---S
+                            selectedForegroundColor: accentColor,
+                           // --- Background color for SELECTED segment ---
+                            selectedBackgroundColor: accentColor.withOpacity(0.12), // A light, translucent shade of the accent color
+
+                            // --- Color for UNSELECTED segment's icon and text ---
+                            foregroundColor: colorScheme.onSurface.withOpacity(0.7),
+                            // --- Background color for UNSELECTED segments ---
+                            backgroundColor: Colors.transparent,
+                          ),
                          ),
                       ),
                       const SizedBox(height: 20),
