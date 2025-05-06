@@ -107,7 +107,7 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
       // Ensure dew point is not greater than OAT (physical impossibility for this formula)
       if (dewPointC > oatC) {
         // Or handle as an error, for now, treat as dry air or return null
-        print("Warning: Dew point ($dewPointC C) > OAT ($oatC C). Calculating DA as dry or returning null.");
+        debugPrint("Warning: Dew point ($dewPointC C) > OAT ($oatC C). Calculating DA as dry or returning null.");
         // Calculate dry air DA as a fallback if this condition is met.
         double isaTempC_dry = 15.0 - (1.98 * (_pressureAltitudeFt! / 1000.0));
         return _pressureAltitudeFt! + (118.8 * (oatC - isaTempC_dry));
@@ -131,7 +131,7 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
       // This is the ISA pressure at the given pressure altitude level
       double pressureAtPa_hPa = P0_hPa * pow((1 - (L_std_K_per_m * paM) / T0_K), 5.25588);
       if (pressureAtPa_hPa <= 0) { // Avoid division by zero or invalid pressure
-          print("Warning: Calculated pressureAtPa_hPa is non-positive ($pressureAtPa_hPa). Using dry DA.");
+          debugPrint("Warning: Calculated pressureAtPa_hPa is non-positive ($pressureAtPa_hPa). Using dry DA.");
           double isaTempC_dry = 15.0 - (2.0 * (_pressureAltitudeFt! / 1000.0));
           return _pressureAltitudeFt! + (120 * (oatC - isaTempC_dry));
       }
@@ -150,15 +150,10 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
       // This formula structure DA = PA + Factor * (EffectiveTemp - ISA_Temp) is a common way.
       double densityAltitudeFt = _pressureAltitudeFt! + (120 * (virtualTempC - isaTempC_at_PA));
 
-      // print("DEBUG DA: PA_ft=${_pressureAltitudeFt}, OAT_C=$oatC, DP_C=$dewPointC");
-      // print("DEBUG DA: e_hPa=$e_hPa, pressureAtPa_hPa=$pressureAtPa_hPa");
-      // print("DEBUG DA: virtualTempC=$virtualTempC, isaTempC_at_PA=$isaTempC_at_PA");
-      // print("DEBUG DA: Calculated DA=$densityAltitudeFt");
-
       return densityAltitudeFt;
 
     } catch (e, s) {
-      print("Error in _calculateDensityAltitude: $e\n$s");
+      debugPrint("Error in _calculateDensityAltitude: $e\n$s");
       return null; // Return null or handle error appropriately
     }
   }
@@ -188,8 +183,8 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
       try {
         double oatC = (_tempUnit == TempUnit.F) ? ((_oat! - 32) * 5 / 9) : _oat!;
         if (oatC <= 0) return _elevationFt; // Already freezing or below at surface
-        // Estimate using standard lapse rate 2°C per 1000 ft
-        double heightAboveStationFt = (oatC / 2.0) * 1000.0;
+        // Estimate using standard lapse rate 1.98°C per 1000 ft
+        double heightAboveStationFt = (oatC / 1.98) * 1000.0;
         return _elevationFt! + heightAboveStationFt; // Approx Freezing Level MSL
       } catch (e) { return null; }
    }
@@ -224,12 +219,12 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
                          ToggleButtons( // Keep ToggleButtons for simple two-way switch
                            isSelected: [_altimeterUnit == PressUnit.inHg, _altimeterUnit == PressUnit.hPa],
                            onPressed: (index) { setState(() { _altimeterUnit = (index == 0) ? PressUnit.inHg : PressUnit.hPa; _calculateAll(); }); },
-                           children: const [Text('inHg'), Text('hPa')],
                            constraints: const BoxConstraints(minHeight: 40.0, minWidth: 50.0), borderRadius: BorderRadius.circular(8),
                            // Add style for border consistency
                             borderWidth: 1.0,
                             borderColor: Theme.of(context).colorScheme.outline.withOpacity(0.8),
                             selectedBorderColor: Theme.of(context).colorScheme.outline.withOpacity(0.8),
+                            children: const [Text('inHg'), Text('hPa')],
                          )
                        ],),
                       const SizedBox(height: 16),
@@ -239,11 +234,11 @@ class _AltitudeAtmosTabState extends State<AltitudeAtmosTab> with AutomaticKeepA
                          ToggleButtons(
                            isSelected: [_tempUnit == TempUnit.C, _tempUnit == TempUnit.F],
                            onPressed: (index) { setState(() { _tempUnit = (index == 0) ? TempUnit.C : TempUnit.F; _calculateAll(); }); },
-                           children: const [Text('°C'), Text('°F')],
                             constraints: const BoxConstraints(minHeight: 40.0, minWidth: 50.0), borderRadius: BorderRadius.circular(8),
-                             borderWidth: 1.0,
-                             borderColor: Theme.of(context).colorScheme.outline.withOpacity(0.8),
-                             selectedBorderColor: Theme.of(context).colorScheme.outline.withOpacity(0.8),
+                            borderWidth: 1.0,
+                            borderColor: Theme.of(context).colorScheme.outline.withOpacity(0.8),
+                            selectedBorderColor: Theme.of(context).colorScheme.outline.withOpacity(0.8),
+                            children: const [Text('°C'), Text('°F')],
                          )
                        ],),
                      const SizedBox(height: 16),

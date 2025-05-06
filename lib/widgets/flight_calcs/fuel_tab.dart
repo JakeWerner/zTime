@@ -2,11 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:ztime/providers/theme_provider.dart'; // Import your ThemeProvider
+import 'package:ztime/providers/theme_provider.dart';
 
 enum FuelCalcMode { endurance, required, rate }
 enum FuelUnit { gal, L } // US Gallons, Liters
-// Removed RateUnit enum
 
 class FuelTab extends StatefulWidget {
   const FuelTab({super.key});
@@ -87,7 +86,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
               currentResult = "${calculatedRate.toStringAsFixed(1)} $rateUnitStr";
             } break;
         }
-      } catch (e) { print("Fuel Calculation Error: $e"); currentResult = 'Error'; }
+      } catch (e) { debugPrint("Fuel Calculation Error: $e"); currentResult = 'Error'; }
       _resultText = currentResult;
     });
   }
@@ -132,7 +131,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
     super.build(context);
     String fuelUnitSuffix = _fuelUnit == FuelUnit.gal ? 'Gal' : 'L';
     String rateUnitSuffix = _fuelUnit == FuelUnit.gal ? 'Gal/Hr' : 'L/Hr';
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false); // Or context.watch if you need it to rebuild on theme change itself
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final MaterialColor accentColor = themeProvider.primaryColor;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
@@ -159,7 +158,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
                 style: SegmentedButton.styleFrom(
                   // --- Overall border for the button group (from previous fix) ---
                   side: BorderSide(
-                    color: colorScheme.outline.withOpacity(0.8), // Or Theme.of(context).dividerColor
+                    color: colorScheme.outline.withOpacity(0.8),
                     width: 1.0,
                   ),
 
@@ -167,7 +166,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
                   selectedForegroundColor: accentColor,
 
                   // --- Background color for SELECTED segment ---
-                  selectedBackgroundColor: accentColor.withOpacity(0.12), // A light, translucent shade of the accent color
+                  selectedBackgroundColor: accentColor.withOpacity(0.12),
 
                   // --- Color for UNSELECTED segment's icon and text ---
                   foregroundColor: colorScheme.onSurface.withOpacity(0.7),
@@ -204,7 +203,7 @@ class _FuelTabState extends State<FuelTab> with AutomaticKeepAliveClientMixin {
              const SizedBox(height: 30),
 
              // --- Result Display ---
-              Center( /* ... Result display same as before ... */
+              Center(
                 child: Column(
                   children: [
                      Text( 'Calculated ${ _mode == FuelCalcMode.endurance ? 'Max Time' : (_mode == FuelCalcMode.required ? 'Fuel Required' : 'Burn Rate') }', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).hintColor),),

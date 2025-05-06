@@ -165,7 +165,7 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
               double gsNorthComp = aircraftNorthComp + windNorthComp; double gsEastComp = aircraftEastComp + windEastComp;
               double gs = sqrt(pow(gsNorthComp, 2) + pow(gsEastComp, 2)); gsStr = "${gs.toStringAsFixed(1)} $speedUnitSuffix";
            } else { wcaStr = "Error"; thStr = "Impossible"; gsStr = "(XW > TAS)"; }
-         } catch (e) { print("Heading/GS Calc Error: $e"); wcaStr = "Error"; thStr = "Error"; gsStr = "Error"; } }
+         } catch (e) { debugPrint("Heading/GS Calc Error: $e"); wcaStr = "Error"; thStr = "Error"; gsStr = "Error"; } }
 
       // Calculate MH, CH
       if (calculatedThDeg != null && variation != null) {
@@ -185,7 +185,7 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
   Widget build(BuildContext context) {
     super.build(context); // KeepAlive
     String speedUnitSuffix = _speedUnit == SpeedUnit.kts ? "kts" : "mph";
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false); // Or context.watch if you need it to rebuild on theme change itself
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final MaterialColor accentColor = themeProvider.primaryColor;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
@@ -243,13 +243,13 @@ class _WindHeadingTabState extends State<WindHeadingTab> with AutomaticKeepAlive
                             minimumSize: const Size(100, 36),
                             // --- Overall border for the button group (from previous fix) ---
                             side: BorderSide(
-                              color: colorScheme.outline.withOpacity(0.8), // Or Theme.of(context).dividerColor
+                              color: colorScheme.outline.withOpacity(0.8),
                               width: 1.0,
                             ),
                             // --- Color for SELECTED segment's icon and text ---S
                             selectedForegroundColor: accentColor,
                            // --- Background color for SELECTED segment ---
-                            selectedBackgroundColor: accentColor.withOpacity(0.12), // A light, translucent shade of the accent color
+                            selectedBackgroundColor: accentColor.withOpacity(0.12),
 
                             // --- Color for UNSELECTED segment's icon and text ---
                             foregroundColor: colorScheme.onSurface.withOpacity(0.7),

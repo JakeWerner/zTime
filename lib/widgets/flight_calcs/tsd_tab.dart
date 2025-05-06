@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:ztime/providers/theme_provider.dart'; // Import your ThemeProvider
+import 'package:ztime/providers/theme_provider.dart';
 
 enum TsdMode { calculateTime, calculateSpeed, calculateDistance }
 
@@ -93,7 +93,7 @@ class _TsdTabState extends State<TsdTab> with AutomaticKeepAliveClientMixin {
           } else { _resultText = '--'; }
         }
       } catch (e) {
-        print("TSD Calculation Error: $e");
+        debugPrint("TSD Calculation Error: $e");
         _resultText = 'Error';
       }
     });
@@ -137,7 +137,7 @@ class _TsdTabState extends State<TsdTab> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false); // Or context.watch if you need it to rebuild on theme change itself
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final MaterialColor accentColor = themeProvider.primaryColor;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
@@ -204,7 +204,7 @@ class _TsdTabState extends State<TsdTab> with AutomaticKeepAliveClientMixin {
                 const SizedBox(height: 30),
 
                 // Result Display
-                Center( /* ... Result display same as before ... */
+                Center(
                   child: Column(
                     children: [
                        Text( 'Calculated ${ _mode.name.replaceFirst('calculate', '') }', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).hintColor)),
